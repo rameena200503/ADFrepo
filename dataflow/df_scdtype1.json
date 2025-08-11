@@ -19,13 +19,55 @@
 					"name": "trsCustomers"
 				}
 			],
-			"sinks": [],
-			"transformations": [
+			"sinks": [
 				{
-					"name": "srccust"
+					"linkedService": {
+						"referenceName": "ls_Azure_SqlServer_TARGET",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sink1"
 				},
 				{
-					"name": "tagCustomers"
+					"linkedService": {
+						"referenceName": "ls_Azure_SqlServer_TARGET",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sink2"
+				}
+			],
+			"transformations": [
+				{
+					"name": "srcSelect"
+				},
+				{
+					"name": "tarSelect"
+				},
+				{
+					"name": "dontexits"
+				},
+				{
+					"name": "derivedColumn1"
+				},
+				{
+					"name": "select1"
+				},
+				{
+					"name": "lookup1"
+				},
+				{
+					"name": "filter1"
+				},
+				{
+					"name": "derivedColumn2"
+				},
+				{
+					"name": "select2"
+				},
+				{
+					"name": "filter2"
+				},
+				{
+					"name": "alterRow1"
 				}
 			],
 			"scriptLines": [
@@ -60,7 +102,7 @@
 				"          src_Sales = Sales",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> srccust",
+				"     skipDuplicateMapOutputs: true) ~> srcSelect",
 				"trsCustomers select(mapColumn(",
 				"          trg_CustID = CustID,",
 				"          trg_CustName = CustName,",
@@ -68,7 +110,72 @@
 				"          trg_Sales = Sales",
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
-				"     skipDuplicateMapOutputs: true) ~> tagCustomers"
+				"     skipDuplicateMapOutputs: true) ~> tarSelect",
+				"srcSelect, tarSelect exists(src_CustID == trg_CustID,",
+				"     negate:true,",
+				"     broadcast: 'auto')~> dontexits",
+				"dontexits derive(Flag = 'Inserted') ~> derivedColumn1",
+				"derivedColumn1 select(mapColumn(",
+				"          CustID = src_CustID,",
+				"          CustName = src_CustName,",
+				"          Location = src_Location,",
+				"          Sales = src_Sales,",
+				"          Flag",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"srcSelect, tarSelect lookup(src_CustID == trg_CustID,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookup1",
+				"lookup1 filter(not(isNull(trg_CustID))) ~> filter1",
+				"filter1 derive(isChangedrecors = iif(src_CustID!= trg_CustID || src_CustName != trg_CustName || src_Location!= trg_Location,'Yes','No'),",
+				"          flag = 'Updated') ~> derivedColumn2",
+				"filter2 select(mapColumn(",
+				"          CustID = src_CustID,",
+				"          CustName = src_CustName,",
+				"          Location = src_Location,",
+				"          Sales = src_Sales,",
+				"          flag",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select2",
+				"derivedColumn2 filter(isChangedrecors=='Yes') ~> filter2",
+				"select2 alterRow(updateIf(1==1)) ~> alterRow1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'customers',",
+				"     insertable: true,",
+				"     updateable: false,",
+				"     deletable: false,",
+				"     upsertable: false,",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError') ~> sink1",
+				"alterRow1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'table',",
+				"     store: 'sqlserver',",
+				"     schemaName: 'dbo',",
+				"     tableName: 'customers',",
+				"     insertable: false,",
+				"     updateable: true,",
+				"     deletable: false,",
+				"     upsertable: false,",
+				"     keys:['CustID'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     errorHandlingOption: 'stopOnFirstError',",
+				"     mapColumn(",
+				"          CustID,",
+				"          CustName,",
+				"          Location,",
+				"          Sales,",
+				"          flag",
+				"     )) ~> sink2"
 			]
 		}
 	}
