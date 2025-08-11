@@ -1,0 +1,51 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "adfram1234"
+		},
+		"AzureDataLakeStorage1_accountKey": {
+			"value": ""
+		},
+		"ls_Azure_SqlServer_TARGET_password": {
+			"value": ""
+		},
+		"ls_adls_ram_accountKey": {
+			"value": ""
+		},
+		"ls_azure_sqlServer_SOURCE_password": {
+			"value": ""
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"value": "https://ramdevazureacc.dfs.core.windows.net/"
+		},
+		"ls_Azure_SqlServer_TARGET_properties_typeProperties_server": {
+			"value": "ramsql123.database.windows.net"
+		},
+		"ls_Azure_SqlServer_TARGET_properties_typeProperties_database": {
+			"value": "TARGET"
+		},
+		"ls_Azure_SqlServer_TARGET_properties_typeProperties_userName": {
+			"value": "ramserver12"
+		},
+		"ls_adls_ram_properties_typeProperties_url": {
+			"value": "https://adlsram123.dfs.core.windows.net/"
+		},
+		"ls_azure_sqlServer_SOURCE_properties_typeProperties_server": {
+			"value": "ramsql123.database.windows.net"
+		},
+		"ls_azure_sqlServer_SOURCE_properties_typeProperties_database": {
+			"value": "SOURCE"
+		},
+		"ls_azure_sqlServer_SOURCE_properties_typeProperties_userName": {
+			"value": "ramserver12"
+		},
+		"containerUri": {
+			"value": ""
+		},
+		"containerSasToken": {
+			"value": ""
+		}
+	}
+}

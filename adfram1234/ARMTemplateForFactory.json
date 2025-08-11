@@ -1,0 +1,1339 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "adfram1234"
+		},
+		"AzureDataLakeStorage1_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'AzureDataLakeStorage1'"
+		},
+		"ls_Azure_SqlServer_TARGET_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_Azure_SqlServer_TARGET'"
+		},
+		"ls_adls_ram_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'ls_adls_ram'"
+		},
+		"ls_azure_sqlServer_SOURCE_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'ls_azure_sqlServer_SOURCE'"
+		},
+		"AzureDataLakeStorage1_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://ramdevazureacc.dfs.core.windows.net/"
+		},
+		"ls_Azure_SqlServer_TARGET_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "ramsql123.database.windows.net"
+		},
+		"ls_Azure_SqlServer_TARGET_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "TARGET"
+		},
+		"ls_Azure_SqlServer_TARGET_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "ramserver12"
+		},
+		"ls_adls_ram_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://adlsram123.dfs.core.windows.net/"
+		},
+		"ls_azure_sqlServer_SOURCE_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "ramsql123.database.windows.net"
+		},
+		"ls_azure_sqlServer_SOURCE_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "SOURCE"
+		},
+		"ls_azure_sqlServer_SOURCE_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "ramserver12"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_aggreagartion')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_aggregation",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcOwners": {},
+									"sinkOwners": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2025-08-11T09:59:40Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_aggregation')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_condition_split')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_condition_split",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srctitanic": {},
+									"titanic10": {},
+									"titanic20": {},
+									"titanic30": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2025-08-11T08:08:37Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_condition_split')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dataflow')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_srcOwner",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2025-08-11T08:08:37Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_srcOwner')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_dataflow_filtr')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_srcOwner_filter",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"source1": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2025-08-11T08:08:37Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_srcOwner_filter')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_deviredcolumns')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_devired_cloumns",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcOwners": {},
+									"sinkOwners": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2025-08-11T09:20:05Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_devired_cloumns')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_join')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_join_transformation",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcOwners": {},
+									"srcPets": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2025-08-11T14:11:29Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_join_transformation')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_select')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_select_transformation",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcOwners": {},
+									"sink1": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": [],
+				"lastPublishTime": "2025-08-11T09:49:34Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_select_transformation')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_datafiles_input_Parquet')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "Parquet",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "titanic.parquet",
+						"folderPath": "input",
+						"fileSystem": "datafiles"
+					},
+					"compressionCodec": "snappy"
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_datafiles_input_owner')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "AzureDataLakeStorage1",
+					"type": "LinkedServiceReference"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "owners.csv",
+						"folderPath": "input",
+						"fileSystem": "datafiles"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": false,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/AzureDataLakeStorage1')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('AzureDataLakeStorage1_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('AzureDataLakeStorage1_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_Azure_SqlServer_TARGET')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('ls_Azure_SqlServer_TARGET_properties_typeProperties_server')]",
+					"database": "[parameters('ls_Azure_SqlServer_TARGET_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": true,
+					"authenticationType": "SQL",
+					"userName": "[parameters('ls_Azure_SqlServer_TARGET_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ls_Azure_SqlServer_TARGET_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_adls_ram')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('ls_adls_ram_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('ls_adls_ram_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ls_azure_sqlServer_SOURCE')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('ls_azure_sqlServer_SOURCE_properties_typeProperties_server')]",
+					"database": "[parameters('ls_azure_sqlServer_SOURCE_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": true,
+					"authenticationType": "SQL",
+					"userName": "[parameters('ls_azure_sqlServer_SOURCE_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('ls_azure_sqlServer_SOURCE_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/selfRuntime')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_aggregation')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_datafiles_input_owner",
+								"type": "DatasetReference"
+							},
+							"name": "srcOwners"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkOwners"
+						}
+					],
+					"transformations": [
+						{
+							"name": "select1"
+						},
+						{
+							"name": "aggregate1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          OwnerID as string,",
+						"          Name as string,",
+						"          Surname as string,",
+						"          StreetAddress as string,",
+						"          City as string,",
+						"          State as string,",
+						"          StateFull as string,",
+						"          ZipCode as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> srcOwners",
+						"srcOwners select(mapColumn(",
+						"          Name,",
+						"          City,",
+						"          State",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 aggregate(COuntCity = count(City)) ~> aggregate1",
+						"aggregate1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'datafiles',",
+						"     folderPath: 'output/OwnersAggre',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '',",
+						"     columnNamesAsHeader: true,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sinkOwners"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_datafiles_input_owner')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_condition_split')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_datafiles_input_Parquet",
+								"type": "DatasetReference"
+							},
+							"name": "srctitanic"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "titanic10"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "titanic20"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "titanic30"
+						}
+					],
+					"transformations": [
+						{
+							"name": "split1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          PassengerId as long,",
+						"          Survived as long,",
+						"          Pclass as long,",
+						"          Name as string,",
+						"          Sex as string,",
+						"          Age as double,",
+						"          SibSp as long,",
+						"          Parch as long,",
+						"          Ticket as string,",
+						"          Fare as double,",
+						"          Cabin as string,",
+						"          Embarked as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'parquet') ~> srctitanic",
+						"srctitanic split(PassengerId == 10,",
+						"     PassengerId == 20,",
+						"     PassengerId == 30,",
+						"     disjoint: false) ~> split1@(titanic10, titanic20, titanic30)",
+						"split1@titanic10 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'datafiles',",
+						"     folderPath: 'output/titanic10',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '',",
+						"     columnNamesAsHeader: true,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> titanic10",
+						"split1@titanic20 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'datafiles',",
+						"     folderPath: 'output/titanic20',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '',",
+						"     columnNamesAsHeader: true,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> titanic20",
+						"split1@titanic30 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'datafiles',",
+						"     folderPath: 'output/titanic30',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '',",
+						"     columnNamesAsHeader: true,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> titanic30"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_datafiles_input_Parquet')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_devired_cloumns')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_datafiles_input_owner",
+								"type": "DatasetReference"
+							},
+							"name": "srcOwners"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkOwners"
+						}
+					],
+					"transformations": [
+						{
+							"name": "derivedColumn1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          OwnerID as integer,",
+						"          Name as string,",
+						"          Surname as string,",
+						"          StreetAddress as string,",
+						"          City as string,",
+						"          State as string,",
+						"          StateFull as integer,",
+						"          ZipCode as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> srcOwners",
+						"srcOwners derive(OwnerID = OwnerID == 2863) ~> derivedColumn1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'parquet',",
+						"     fileSystem: 'datafiles',",
+						"     folderPath: 'output/owner',",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sinkOwners"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_datafiles_input_owner')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_join_transformation')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_datafiles_input_owner",
+								"type": "DatasetReference"
+							},
+							"name": "srcOwners"
+						},
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "srcPets"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "join1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          OwnerID as integer,",
+						"          Name as string,",
+						"          Surname as string,",
+						"          StreetAddress as string,",
+						"          City as string,",
+						"          State as string,",
+						"          StateFull as string,",
+						"          ZipCode as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> srcOwners",
+						"source(output(",
+						"          PetID as string,",
+						"          Name as string,",
+						"          Kind as string,",
+						"          Gender as string,",
+						"          Age as short,",
+						"          OwnerID as integer",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'datafiles',",
+						"     folderPath: 'input',",
+						"     fileName: 'pets.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '',",
+						"     columnNamesAsHeader: true) ~> srcPets",
+						"srcOwners, srcPets join(srcOwners@OwnerID == srcPets@OwnerID,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> join1",
+						"join1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'datafiles',",
+						"     folderPath: 'output/owners_join',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '',",
+						"     columnNamesAsHeader: true,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_datafiles_input_owner')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_scdtype1')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "ls_azure_sqlServer_SOURCE",
+								"type": "LinkedServiceReference"
+							},
+							"name": "srcCustomer"
+						},
+						{
+							"linkedService": {
+								"referenceName": "ls_Azure_SqlServer_TARGET",
+								"type": "LinkedServiceReference"
+							},
+							"name": "trsCustomers"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "ls_Azure_SqlServer_TARGET",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink1"
+						},
+						{
+							"linkedService": {
+								"referenceName": "ls_Azure_SqlServer_TARGET",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink2"
+						}
+					],
+					"transformations": [
+						{
+							"name": "srcSelect"
+						},
+						{
+							"name": "tarSelect"
+						},
+						{
+							"name": "dontexits"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "select1"
+						},
+						{
+							"name": "lookup1"
+						},
+						{
+							"name": "filter1"
+						},
+						{
+							"name": "derivedColumn2"
+						},
+						{
+							"name": "select2"
+						},
+						{
+							"name": "filter2"
+						},
+						{
+							"name": "alterRow1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          CustID as integer,",
+						"          CustName as string,",
+						"          Location as string,",
+						"          Sales as decimal(19,4)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     store: 'sqlserver',",
+						"     query: 'SELECT CustID,CustName,Location,Sales FROM customers',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> srcCustomer",
+						"source(output(",
+						"          CustID as integer,",
+						"          CustName as string,",
+						"          Location as string,",
+						"          Sales as decimal(19,4)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     store: 'sqlserver',",
+						"     query: 'SELECT CustID,CustName,Location,Sales FROM customers',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> trsCustomers",
+						"srcCustomer select(mapColumn(",
+						"          src_CustID = CustID,",
+						"          src_CustName = CustName,",
+						"          src_Location = Location,",
+						"          src_Sales = Sales",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> srcSelect",
+						"trsCustomers select(mapColumn(",
+						"          trg_CustID = CustID,",
+						"          trg_CustName = CustName,",
+						"          trg_Location = Location,",
+						"          trg_Sales = Sales",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> tarSelect",
+						"srcSelect, tarSelect exists(src_CustID == trg_CustID,",
+						"     negate:true,",
+						"     broadcast: 'auto')~> dontexits",
+						"dontexits derive(Flag = 'Inserted') ~> derivedColumn1",
+						"derivedColumn1 select(mapColumn(",
+						"          CustID = src_CustID,",
+						"          CustName = src_CustName,",
+						"          Location = src_Location,",
+						"          Sales = src_Sales,",
+						"          Flag",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"srcSelect, tarSelect lookup(src_CustID == trg_CustID,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup1",
+						"lookup1 filter(not(isNull(trg_CustID))) ~> filter1",
+						"filter1 derive(isChangedrecors = iif(src_CustID!= trg_CustID || src_CustName != trg_CustName || src_Location!= trg_Location,'Yes','No'),",
+						"          flag = 'Updated') ~> derivedColumn2",
+						"filter2 select(mapColumn(",
+						"          CustID = src_CustID,",
+						"          CustName = src_CustName,",
+						"          Location = src_Location,",
+						"          Sales = src_Sales,",
+						"          flag",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select2",
+						"derivedColumn2 filter(isChangedrecors=='Yes') ~> filter2",
+						"select2 alterRow(updateIf(1==1)) ~> alterRow1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'customers',",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     deletable: false,",
+						"     upsertable: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError') ~> sink1",
+						"alterRow1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'customers',",
+						"     insertable: false,",
+						"     updateable: true,",
+						"     deletable: false,",
+						"     upsertable: false,",
+						"     keys:['CustID'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          CustID,",
+						"          CustName,",
+						"          Location,",
+						"          Sales,",
+						"          flag",
+						"     )) ~> sink2"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_azure_sqlServer_SOURCE')]",
+				"[concat(variables('factoryId'), '/linkedServices/ls_Azure_SqlServer_TARGET')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_select_transformation')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_datafiles_input_owner",
+								"type": "DatasetReference"
+							},
+							"name": "srcOwners"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "select1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          OwnerID as string,",
+						"          Name as string,",
+						"          Surname as string,",
+						"          StreetAddress as string,",
+						"          City as string,",
+						"          State as string,",
+						"          StateFull as string,",
+						"          ZipCode as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> srcOwners",
+						"srcOwners select(mapColumn(",
+						"          OwnerID,",
+						"          Name,",
+						"          City,",
+						"          State,",
+						"          StateFull",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"select1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'datafiles',",
+						"     folderPath: 'output/owner_select',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '',",
+						"     columnNamesAsHeader: true,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_datafiles_input_owner')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_srcOwner')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_datafiles_input_owner",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "filter1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          OwnerID as string,",
+						"          Name as string,",
+						"          Surname as string,",
+						"          StreetAddress as string,",
+						"          City as string,",
+						"          State as string,",
+						"          StateFull as string,",
+						"          ZipCode as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source1 filter(ZipCode == '49503') ~> filter1",
+						"filter1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'datafiles',",
+						"     folderPath: 'output/owner',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_datafiles_input_owner')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_srcOwner_filter')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_datafiles_input_owner",
+								"type": "DatasetReference"
+							},
+							"name": "source1"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "AzureDataLakeStorage1",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink1"
+						}
+					],
+					"transformations": [
+						{
+							"name": "filter1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          OwnerID as string,",
+						"          Name as string,",
+						"          Surname as string,",
+						"          StreetAddress as string,",
+						"          City as string,",
+						"          State as string,",
+						"          StateFull as string,",
+						"          ZipCode as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> source1",
+						"source1 filter(left(Name,1)=='M' || left(Name,1)=='M') ~> filter1",
+						"filter1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     fileSystem: 'datafiles',",
+						"     folderPath: 'output',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: false,",
+						"     umask: 0022,",
+						"     preCommands: [],",
+						"     postCommands: [],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> sink1"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_datafiles_input_owner')]",
+				"[concat(variables('factoryId'), '/linkedServices/AzureDataLakeStorage1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_Scd_Type_1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_scdtype1",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcCustomer": {},
+									"trsCustomers": {},
+									"sink1": {},
+									"sink2": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_scdtype1')]"
+			]
+		}
+	]
+}
