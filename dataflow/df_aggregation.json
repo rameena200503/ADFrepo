@@ -1,0 +1,71 @@
+{
+	"name": "df_aggregation",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_datafiles_input_owner",
+						"type": "DatasetReference"
+					},
+					"name": "srcOwners"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzureDataLakeStorage1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkOwners"
+				}
+			],
+			"transformations": [
+				{
+					"name": "select1"
+				},
+				{
+					"name": "aggregate1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          OwnerID as string,",
+				"          Name as string,",
+				"          Surname as string,",
+				"          StreetAddress as string,",
+				"          City as string,",
+				"          State as string,",
+				"          StateFull as string,",
+				"          ZipCode as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> srcOwners",
+				"srcOwners select(mapColumn(",
+				"          Name,",
+				"          City,",
+				"          State",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 aggregate(COuntCity = count(City)) ~> aggregate1",
+				"aggregate1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delimited',",
+				"     fileSystem: 'datafiles',",
+				"     folderPath: 'output/OwnersAggre',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '',",
+				"     columnNamesAsHeader: true,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkOwners"
+			]
+		}
+	}
+}

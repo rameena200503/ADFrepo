@@ -1,0 +1,69 @@
+{
+	"name": "df_select_transformation",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_datafiles_input_owner",
+						"type": "DatasetReference"
+					},
+					"name": "srcOwners"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzureDataLakeStorage1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "select1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          OwnerID as string,",
+				"          Name as string,",
+				"          Surname as string,",
+				"          StreetAddress as string,",
+				"          City as string,",
+				"          State as string,",
+				"          StateFull as string,",
+				"          ZipCode as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> srcOwners",
+				"srcOwners select(mapColumn(",
+				"          OwnerID,",
+				"          Name,",
+				"          City,",
+				"          State,",
+				"          StateFull",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> select1",
+				"select1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delimited',",
+				"     fileSystem: 'datafiles',",
+				"     folderPath: 'output/owner_select',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '',",
+				"     columnNamesAsHeader: true,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sink1"
+			]
+		}
+	}
+}

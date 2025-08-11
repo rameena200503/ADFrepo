@@ -1,0 +1,111 @@
+{
+	"name": "df_condition_split",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_datafiles_input_Parquet",
+						"type": "DatasetReference"
+					},
+					"name": "srctitanic"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzureDataLakeStorage1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "titanic10"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzureDataLakeStorage1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "titanic20"
+				},
+				{
+					"linkedService": {
+						"referenceName": "AzureDataLakeStorage1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "titanic30"
+				}
+			],
+			"transformations": [
+				{
+					"name": "split1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          PassengerId as long,",
+				"          Survived as long,",
+				"          Pclass as long,",
+				"          Name as string,",
+				"          Sex as string,",
+				"          Age as double,",
+				"          SibSp as long,",
+				"          Parch as long,",
+				"          Ticket as string,",
+				"          Fare as double,",
+				"          Cabin as string,",
+				"          Embarked as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'parquet') ~> srctitanic",
+				"srctitanic split(PassengerId == 10,",
+				"     PassengerId == 20,",
+				"     PassengerId == 30,",
+				"     disjoint: false) ~> split1@(titanic10, titanic20, titanic30)",
+				"split1@titanic10 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delimited',",
+				"     fileSystem: 'datafiles',",
+				"     folderPath: 'output/titanic10',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '',",
+				"     columnNamesAsHeader: true,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> titanic10",
+				"split1@titanic20 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delimited',",
+				"     fileSystem: 'datafiles',",
+				"     folderPath: 'output/titanic20',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '',",
+				"     columnNamesAsHeader: true,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> titanic20",
+				"split1@titanic30 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delimited',",
+				"     fileSystem: 'datafiles',",
+				"     folderPath: 'output/titanic30',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '',",
+				"     columnNamesAsHeader: true,",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> titanic30"
+			]
+		}
+	}
+}

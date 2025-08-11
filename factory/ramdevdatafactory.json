@@ -1,0 +1,9 @@
+{
+	"name": "ramdevdatafactory",
+	"location": "centralindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "9e5e7a2c-3b39-4937-942b-fc8daa8527a0",
+		"tenantId": "cc829605-0096-435e-935c-e27ac839a280"
+	}
+}

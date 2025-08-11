@@ -1,0 +1,57 @@
+{
+	"name": "df_devired_cloumns",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_datafiles_input_owner",
+						"type": "DatasetReference"
+					},
+					"name": "srcOwners"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "AzureDataLakeStorage1",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkOwners"
+				}
+			],
+			"transformations": [
+				{
+					"name": "derivedColumn1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          OwnerID as integer,",
+				"          Name as string,",
+				"          Surname as string,",
+				"          StreetAddress as string,",
+				"          City as string,",
+				"          State as string,",
+				"          StateFull as integer,",
+				"          ZipCode as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> srcOwners",
+				"srcOwners derive(OwnerID = OwnerID == 2863) ~> derivedColumn1",
+				"derivedColumn1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'parquet',",
+				"     fileSystem: 'datafiles',",
+				"     folderPath: 'output/owner',",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> sinkOwners"
+			]
+		}
+	}
+}
