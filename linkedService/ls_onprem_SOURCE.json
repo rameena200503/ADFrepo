@@ -1,0 +1,21 @@
+{
+	"name": "ls_onprem_SOURCE",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "SqlServer",
+		"typeProperties": {
+			"server": "DESKTOP-H3D85L0\\SQLEXPRESS",
+			"database": "SOURCE",
+			"encrypt": "mandatory",
+			"trustServerCertificate": true,
+			"authenticationType": "SQL",
+			"userName": "sql123",
+			"encryptedCredential": "eyJDcmVkZW50aWFsSWQiOiJmMGFiZjI0ZC05NzA0LTRhNzQtYTMwYy04Y2IwYzJhNWMyNzAiLCJWZXJzaW9uIjoiMi4wIiwiQ2xhc3NUeXBlIjoiTWljcm9zb2Z0LkRhdGFQcm94eS5Db3JlLkludGVyU2VydmljZURhdGFDb250cmFjdC5DcmVkZW50aWFsU1UwNkNZMTQifQ=="
+		},
+		"connectVia": {
+			"referenceName": "selfRuntime",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
