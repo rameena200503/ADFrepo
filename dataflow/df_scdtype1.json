@@ -1,0 +1,75 @@
+{
+	"name": "df_scdtype1",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "ls_azure_sqlServer_SOURCE",
+						"type": "LinkedServiceReference"
+					},
+					"name": "srcCustomer"
+				},
+				{
+					"linkedService": {
+						"referenceName": "ls_Azure_SqlServer_TARGET",
+						"type": "LinkedServiceReference"
+					},
+					"name": "trsCustomers"
+				}
+			],
+			"sinks": [],
+			"transformations": [
+				{
+					"name": "srccust"
+				},
+				{
+					"name": "tagCustomers"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          CustID as integer,",
+				"          CustName as string,",
+				"          Location as string,",
+				"          Sales as decimal(19,4)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     store: 'sqlserver',",
+				"     query: 'SELECT CustID,CustName,Location,Sales FROM customers',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> srcCustomer",
+				"source(output(",
+				"          CustID as integer,",
+				"          CustName as string,",
+				"          Location as string,",
+				"          Sales as decimal(19,4)",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'query',",
+				"     store: 'sqlserver',",
+				"     query: 'SELECT CustID,CustName,Location,Sales FROM customers',",
+				"     isolationLevel: 'READ_UNCOMMITTED') ~> trsCustomers",
+				"srcCustomer select(mapColumn(",
+				"          src_CustID = CustID,",
+				"          src_CustName = CustName,",
+				"          src_Location = Location,",
+				"          src_Sales = Sales",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> srccust",
+				"trsCustomers select(mapColumn(",
+				"          trg_CustID = CustID,",
+				"          trg_CustName = CustName,",
+				"          trg_Location = Location,",
+				"          trg_Sales = Sales",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> tagCustomers"
+			]
+		}
+	}
+}
