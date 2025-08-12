@@ -392,6 +392,296 @@
 			]
 		},
 		{
+			"name": "[concat(parameters('factoryName'), '/df_scdtypeII')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "ls_azure_sqlServer_SOURCE",
+								"type": "LinkedServiceReference"
+							},
+							"name": "srcCust"
+						},
+						{
+							"linkedService": {
+								"referenceName": "ls_Azure_SqlServer_TARGET",
+								"type": "LinkedServiceReference"
+							},
+							"name": "trgCust"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "ls_Azure_SqlServer_TARGET",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink1"
+						},
+						{
+							"linkedService": {
+								"referenceName": "ls_Azure_SqlServer_TARGET",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sink2"
+						}
+					],
+					"transformations": [
+						{
+							"name": "srcselect"
+						},
+						{
+							"name": "trgselect"
+						},
+						{
+							"name": "lookup1"
+						},
+						{
+							"name": "split1"
+						},
+						{
+							"name": "select1"
+						},
+						{
+							"name": "filter1"
+						},
+						{
+							"name": "ssrcelect2"
+						},
+						{
+							"name": "derivedColumn1"
+						},
+						{
+							"name": "select2"
+						},
+						{
+							"name": "derivedColumn2"
+						},
+						{
+							"name": "alterRow1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          CustID as integer,",
+						"          CustName as string,",
+						"          Location as string,",
+						"          Sales as decimal(19,4)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     store: 'sqlserver',",
+						"     query: 'SELECT CustID,CustName,Location,Sales FROM customers',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> srcCust",
+						"source(output(",
+						"          CustKey as integer,",
+						"          CustID as integer,",
+						"          CustName as string,",
+						"          Location as string,",
+						"          Sales as decimal(19,4)",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'query',",
+						"     store: 'sqlserver',",
+						"     query: 'SELECT CustKey,CustID,CustName,Location,Sales FROM customers where EndDate is null',",
+						"     isolationLevel: 'READ_UNCOMMITTED') ~> trgCust",
+						"srcCust select(mapColumn(",
+						"          src_CustID = CustID,",
+						"          src_CustName = CustName,",
+						"          src_Location = Location,",
+						"          src_Sales = Sales",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> srcselect",
+						"trgCust select(mapColumn(",
+						"          CustKey,",
+						"          trg_CustID = CustID,",
+						"          trg_CustName = CustName,",
+						"          trg_Location = Location,",
+						"          trg_Sales = Sales",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> trgselect",
+						"srcselect, trgselect lookup(src_CustID == trg_CustID,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookup1",
+						"lookup1 split(isNull(trg_CustID),",
+						"     disjoint: false) ~> split1@(NewRecords, ExistedRecords)",
+						"split1@NewRecords select(mapColumn(",
+						"          CustID = src_CustID,",
+						"          CustName = src_CustName,",
+						"          Location = src_Location,",
+						"          Sales = src_Sales",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select1",
+						"split1@ExistedRecords filter(iif(src_CustName!=trg_CustName || src_Location!=trg_Location || src_Sales!=trg_Sales,true(),false())) ~> filter1",
+						"filter1 select(mapColumn(",
+						"          CustID = src_CustID,",
+						"          CustName = src_CustName,",
+						"          Location = src_Location,",
+						"          Sales = src_Sales",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> ssrcelect2",
+						"select1 derive(startDate = currentUTC()) ~> derivedColumn1",
+						"filter1 select(mapColumn(",
+						"          CustKey",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> select2",
+						"select2 derive(EndDate = currentUTC()) ~> derivedColumn2",
+						"derivedColumn2 alterRow(updateIf(1==1)) ~> alterRow1",
+						"derivedColumn1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'customers',",
+						"     insertable: true,",
+						"     updateable: false,",
+						"     deletable: false,",
+						"     upsertable: false,",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          CustID,",
+						"          CustName,",
+						"          Location,",
+						"          Sales,",
+						"          startDate",
+						"     )) ~> sink1",
+						"alterRow1 sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'table',",
+						"     store: 'sqlserver',",
+						"     schemaName: 'dbo',",
+						"     tableName: 'customers',",
+						"     insertable: false,",
+						"     updateable: true,",
+						"     deletable: false,",
+						"     upsertable: false,",
+						"     keys:['CustKey'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     errorHandlingOption: 'stopOnFirstError',",
+						"     mapColumn(",
+						"          CustKey,",
+						"          EndDate",
+						"     )) ~> sink2"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/ls_azure_sqlServer_SOURCE')]",
+				"[concat(variables('factoryId'), '/linkedServices/ls_Azure_SqlServer_TARGET')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_Scd_Type_1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_scdtype1",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcCustomer": {},
+									"trsCustomers": {},
+									"sink1": {},
+									"sink2": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_scdtype1')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_scdtypeII')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow1",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_scdtypeII",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"srcCust": {},
+									"trgCust": {},
+									"sink1": {},
+									"sink2": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"annotations": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_scdtypeII')]"
+			]
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/df_aggregation')]",
 			"type": "Microsoft.DataFactory/factories/dataflows",
 			"apiVersion": "2018-06-01",
@@ -956,54 +1246,6 @@
 			]
 		},
 		{
-			"name": "[concat(parameters('factoryName'), '/pl_Scd_Type_1')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Data flow1",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_scdtype1",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"srcCustomer": {},
-									"trsCustomers": {},
-									"sink1": {},
-									"sink2": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": []
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/df_scdtype1')]"
-			]
-		},
-		{
 			"name": "[concat(parameters('factoryName'), '/pl_aggreagartion')]",
 			"type": "Microsoft.DataFactory/factories/pipelines",
 			"apiVersion": "2018-06-01",
@@ -1097,100 +1339,6 @@
 			},
 			"dependsOn": [
 				"[concat(variables('factoryId'), '/dataflows/df_condition_split')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_dataflow')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Data flow1",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_srcOwner",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source1": {},
-									"sink1": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": [],
-				"lastPublishTime": "2025-08-11T08:08:37Z"
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/df_srcOwner')]"
-			]
-		},
-		{
-			"name": "[concat(parameters('factoryName'), '/pl_dataflow_filtr')]",
-			"type": "Microsoft.DataFactory/factories/pipelines",
-			"apiVersion": "2018-06-01",
-			"properties": {
-				"activities": [
-					{
-						"name": "Data flow1",
-						"type": "ExecuteDataFlow",
-						"dependsOn": [],
-						"policy": {
-							"timeout": "0.12:00:00",
-							"retry": 0,
-							"retryIntervalInSeconds": 30,
-							"secureOutput": false,
-							"secureInput": false
-						},
-						"userProperties": [],
-						"typeProperties": {
-							"dataflow": {
-								"referenceName": "df_srcOwner_filter",
-								"type": "DataFlowReference",
-								"parameters": {},
-								"datasetParameters": {
-									"source1": {},
-									"sink1": {}
-								}
-							},
-							"staging": {},
-							"compute": {
-								"coreCount": 8,
-								"computeType": "General"
-							},
-							"traceLevel": "Fine"
-						}
-					}
-				],
-				"policy": {
-					"elapsedTimeMetric": {}
-				},
-				"annotations": [],
-				"lastPublishTime": "2025-08-11T08:08:37Z"
-			},
-			"dependsOn": [
-				"[concat(variables('factoryId'), '/dataflows/df_srcOwner_filter')]"
 			]
 		}
 	]
