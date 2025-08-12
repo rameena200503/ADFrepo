@@ -58,9 +58,6 @@
 					"name": "ssrcelect2"
 				},
 				{
-					"name": "union1"
-				},
-				{
 					"name": "derivedColumn1"
 				},
 				{
@@ -139,8 +136,7 @@
 				"     ),",
 				"     skipDuplicateMapInputs: true,",
 				"     skipDuplicateMapOutputs: true) ~> ssrcelect2",
-				"select1, ssrcelect2 union(byName: true)~> union1",
-				"union1 derive(startDate = currentUTC()) ~> derivedColumn1",
+				"select1 derive(startDate = currentUTC()) ~> derivedColumn1",
 				"filter1 select(mapColumn(",
 				"          CustKey",
 				"     ),",
